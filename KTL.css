@@ -1,0 +1,233 @@
+/**
+ * KTL (Knack Toolkit Library) - Next-Gen Styles
+ * Base styles for KTL functionality.
+ *
+ * @author  Normand Defayette <nd@ctrnd.com>
+ * @license MIT
+ * 2025
+ */
+
+/* ========================================
+   UTILITY CLASSES
+   ======================================== */
+
+.ktlHidden {
+    visibility: hidden !important;
+}
+
+.ktlDisplayNone {
+    display: none !important;
+}
+
+.ktlCollapse {
+    visibility: collapse !important;
+}
+
+.ktlInvisible {
+    opacity: 0 !important;
+}
+
+.ktlReadOnly {
+    pointer-events: none !important;
+    opacity: 0.7;
+}
+
+.ktlRequired label::after {
+    content: ' *';
+    color: #f44336;
+}
+
+/* ========================================
+   POPUP NOTIFICATIONS
+   ======================================== */
+
+.ktl-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 4px;
+    color: white;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-family: inherit;
+    font-size: 14px;
+    animation: ktlSlideIn 0.3s ease-out;
+}
+
+.ktl-popup-info {
+    background: #2196f3;
+}
+
+.ktl-popup-warning {
+    background: #ff9800;
+}
+
+.ktl-popup-error {
+    background: #f44336;
+}
+
+.ktl-popup-success {
+    background: #4caf50;
+}
+
+@keyframes ktlSlideIn {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   VERSION INFO BAR
+   ======================================== */
+
+.ktl-version-info {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 11px;
+    padding: 4px 10px;
+    z-index: 9999;
+    display: flex;
+    justify-content: space-between;
+}
+
+.ktl-version-info.ktl-dev-mode {
+    background: rgba(255, 87, 34, 0.9);
+}
+
+.ktl-version-info.ktl-beta-mode {
+    background: rgba(255, 193, 7, 0.9);
+    color: #333;
+}
+
+/* ========================================
+   TABLE ENHANCEMENTS
+   ======================================== */
+
+/* Sticky table headers */
+.ktl-sticky-header thead {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: white;
+}
+
+/* Row hover highlight */
+.kn-table-view tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Selected row */
+.kn-table-view tbody tr.ktl-selected {
+    background-color: rgba(33, 150, 243, 0.1);
+}
+
+/* ========================================
+   LOADING STATES
+   ======================================== */
+
+.ktl-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.ktl-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ========================================
+   DARK THEME SUPPORT (CSS Variables)
+   ======================================== */
+
+:root {
+    --ktl-bg-primary: #ffffff;
+    --ktl-bg-secondary: #f5f5f5;
+    --ktl-text-primary: #333333;
+    --ktl-text-secondary: #666666;
+    --ktl-border-color: #e0e0e0;
+    --ktl-accent-color: #2196f3;
+    --ktl-error-color: #f44336;
+    --ktl-warning-color: #ff9800;
+    --ktl-success-color: #4caf50;
+}
+
+/* Dark theme overrides - apply with [data-theme="dark"] on body */
+[data-theme="dark"] {
+    --ktl-bg-primary: #1e1e1e;
+    --ktl-bg-secondary: #2d2d2d;
+    --ktl-text-primary: #e0e0e0;
+    --ktl-text-secondary: #a0a0a0;
+    --ktl-border-color: #404040;
+}
+
+/* ========================================
+   DEBUG WINDOW
+   ======================================== */
+
+.ktl-debug-window {
+    position: fixed;
+    bottom: 30px;
+    right: 10px;
+    width: 400px;
+    max-height: 300px;
+    background: var(--ktl-bg-primary);
+    border: 1px solid var(--ktl-border-color);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9998;
+    overflow: hidden;
+    font-family: monospace;
+    font-size: 12px;
+}
+
+.ktl-debug-window-header {
+    background: var(--ktl-bg-secondary);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--ktl-border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.ktl-debug-window-content {
+    padding: 8px 12px;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .ktl-popup {
+        left: 10px;
+        right: 10px;
+        top: auto;
+        bottom: 10px;
+    }
+
+    .ktl-debug-window {
+        width: calc(100% - 20px);
+        left: 10px;
+        right: 10px;
+    }
+}
