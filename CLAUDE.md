@@ -200,28 +200,28 @@ document.head.appendChild(style);
 
 ## Implementation Phases
 
-### Phase 0: Foundation
-- [x] Basic KTL_Loader.js (exists)
-- [ ] Enhanced loader with version management
-- [ ] Event abstraction layer
-- [ ] Schema access abstraction
+### Phase 0: Foundation ✓
+- [x] Basic KTL_Loader.js
+- [x] Enhanced loader with version management (prod/beta/dev/local/numbered)
+- [x] Event abstraction layer (ktl.events with Classic-to-NG mapping)
+- [x] Schema access via Knack.getPages/getTables/getFields/getViews
 
-### Phase 1: Core Skeleton
-- [ ] KTL.js class structure with module stubs
-- [ ] Keyword parser port
-- [ ] Constants
+### Phase 1: Core Skeleton ✓
+- [x] KTL.js class structure with module stubs
+- [x] Keyword parser port (pages, views, fields)
+- [x] Constants (ktl.const)
 
-### Phase 2: Core Modules
-- [ ] ktl.core (config, API, utilities)
-- [ ] ktl.storage (direct port - localStorage is universal)
-- [ ] ktl.account (adapt to Knack.getUser())
-- [ ] ktl.log
+### Phase 2: Core Modules (Partial)
+- [x] ktl.core (setCfg, getCfg, waitSelector, timedPopup)
+- [x] ktl.storage (localStorage/sessionStorage with prefix)
+- [x] ktl.log (clog, addLog, getLogs)
+- [ ] ktl.account (stub only)
 
-### Phase 3: Views & Scenes
-- [ ] ktl.scenes (page lifecycle)
-- [ ] ktl.views (largest module - 11k+ lines)
-- [ ] CSS-first keyword handlers
-- [ ] Auto-refresh functionality
+### Phase 3: Views & Scenes (Partial)
+- [ ] ktl.scenes (stub only)
+- [x] ktl.views.autoRefresh (timer works, but view refresh blocked - see Missing API)
+- [ ] ktl.views - remaining functionality
+- [ ] CSS-first keyword handlers (_hc, _rc, etc.)
 
 ### Phase 4: Feature Modules
 - [ ] ktl.userPrefs
@@ -301,6 +301,13 @@ Test app at `C:\code\KnackApps\KTL-NG Tutorials\` should include:
   - Basic initialization with keyword parsing
 - **Created KTL.css** with utility classes, popup styles, dark theme variables
 - **Set up KTL-NG Tutorials test app** with KnackApp callback pattern
+
+### 2026-01-31
+- Extracted Knack Next-Gen API reference from decompiled code
+- Documented missing view refresh API (feature request needed)
+- **Git repos initialized**:
+  - KTLNG: https://github.com/cortexrd/KTLNG
+  - KTL-NG Tutorials: https://github.com/cortexrd/KTL-NG-Tutorials
 
 ---
 
