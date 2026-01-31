@@ -201,43 +201,43 @@ document.head.appendChild(style);
 ## Implementation Phases
 
 ### Phase 0: Foundation ✓
-- [x] Basic KTL_Loader.js
-- [x] Enhanced loader with version management (prod/beta/dev/local/numbered)
-- [x] Event abstraction layer (ktl.events with Classic-to-NG mapping)
-- [x] Schema access via Knack.getPages/getTables/getFields/getViews
+- ✅ Basic KTL_Loader.js
+- ✅ Enhanced loader with version management (prod/beta/dev/local/numbered)
+- ✅ Event abstraction layer (ktl.events with Classic-to-NG mapping)
+- ✅ Schema access via Knack.getPages/getTables/getFields/getViews
 
 ### Phase 1: Core Skeleton ✓
-- [x] KTL.js class structure with module stubs
-- [x] Keyword parser port (pages, views, fields)
-- [x] Constants (ktl.const)
+- ✅ KTL.js class structure with module stubs
+- ✅ Keyword parser port (pages, views, fields)
+- ✅ Constants (ktl.const)
 
 ### Phase 2: Core Modules (Partial)
-- [x] ktl.core (setCfg, getCfg, waitSelector, timedPopup)
-- [x] ktl.storage (localStorage/sessionStorage with prefix)
-- [x] ktl.log (clog, addLog, getLogs)
-- [ ] ktl.account (stub only)
+- ✅ ktl.core (setCfg, getCfg, waitSelector, timedPopup)
+- ✅ ktl.storage (localStorage/sessionStorage with prefix)
+- ✅ ktl.log (clog, addLog, getLogs)
+- ⬜ ktl.account (stub only)
 
 ### Phase 3: Views & Scenes (Partial)
-- [ ] ktl.scenes (stub only)
-- [x] ktl.views.autoRefresh (timer works, but view refresh blocked - see Missing API)
-- [ ] ktl.views - remaining functionality
-- [ ] CSS-first keyword handlers (_hc, _rc, etc.)
+- ⬜ ktl.scenes (stub only)
+- ✅ ktl.views.autoRefresh (timer works, but view refresh blocked - see Missing API)
+- ⬜ ktl.views - remaining functionality
+- ⬜ CSS-first keyword handlers (_hc, _rc, etc.)
 
 ### Phase 4: Feature Modules
-- [ ] ktl.userPrefs
-- [ ] ktl.persistentForm
-- [ ] ktl.fields
-- [ ] ktl.userFilters
+- ⬜ ktl.userPrefs
+- ⬜ ktl.persistentForm
+- ⬜ ktl.fields
+- ⬜ ktl.userFilters
 
 ### Phase 5: Advanced
-- [ ] ktl.bulkOps
-- [ ] ktl.iFrameWnd
-- [ ] Remaining modules
+- ⬜ ktl.bulkOps
+- ⬜ ktl.iFrameWnd
+- ⬜ Remaining modules
 
 ### Phase 6: Polish
-- [ ] Full keyword testing
-- [ ] Performance optimization
-- [ ] Documentation
+- ⬜ Full keyword testing
+- ⬜ Performance optimization
+- ⬜ Documentation
 
 ---
 
