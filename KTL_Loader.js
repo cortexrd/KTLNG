@@ -64,7 +64,7 @@ Knack.ready().then(async () => {
     const appId = appDetails.id || '';
     const lsShortName = appName.substr(0, 6).replace(/ /g, '') + '_' + appId.substr(-4, 4) + '_';
 
-    console.log('KTL: Storage prefix is', lsShortName);
+    //console.log('KTL: Storage prefix is', lsShortName);
 
     //Check for URL parameter to switch modes: ?ktl=local or ?ktl=dev or ?ktl=prod
     const urlParams = new URLSearchParams(window.location.search);

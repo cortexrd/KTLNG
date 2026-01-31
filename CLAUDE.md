@@ -122,7 +122,6 @@ Same module organization, but with:
 - Vanilla JS instead of jQuery (where possible)
 - Promise-based APIs
 - CSS-first DOM modifications
-- Event abstraction layer for compatibility
 
 ---
 
@@ -203,7 +202,6 @@ document.head.appendChild(style);
 ### Phase 0: Foundation ✓
 - ✅ Basic KTL_Loader.js
 - ✅ Enhanced loader with version management (prod/beta/dev/local/numbered)
-- ✅ Event abstraction layer (ktl.events with Classic-to-NG mapping)
 - ✅ Schema access via Knack.getPages/getTables/getFields/getViews
 
 ### Phase 1: Core Skeleton ✓
@@ -241,38 +239,6 @@ document.head.appendChild(style);
 
 ---
 
-## Event Abstraction Layer Design
-
-```javascript
-const KtlEvents = {
-    // Map Classic event names to Next-Gen
-    eventMap: {
-        'knack-scene-render': 'page:render',
-        'knack-view-render': 'view:render',
-        'knack-form-submit': 'form:submit',
-        'knack-record-create': 'record:create',
-        'knack-record-update': 'record:update',
-        'knack-records-render': 'records:render'
-    },
-
-    on(eventName, callback) {
-        // Parse Classic-style event name if needed
-        // Convert to Next-Gen format
-        // Call Knack.on()
-    },
-
-    off(eventName, namespace) {
-        // Remove event listener
-    },
-
-    one(eventName, callback) {
-        // One-time handler
-    }
-};
-```
-
----
-
 ## Testing with KTL-NG Tutorials App
 
 Test app at `C:\code\KnackApps\KTL-NG Tutorials\` should include:
@@ -296,7 +262,6 @@ Test app at `C:\code\KnackApps\KTL-NG Tutorials\` should include:
 - **Enhanced KTL_Loader.js** with full version management (prod/beta/dev/local/numbered)
 - **Created KTL.js skeleton** (~900 lines) with:
   - Keyword parser (ported from KTL, adapted for vanilla JS)
-  - Event abstraction layer (maps Classic events to Next-Gen)
   - All module stubs: core, storage, fields, persistentForm, userFilters, views, scenes, log, userPrefs, account, iFrameWnd, wndMsg, bulkOps, sysInfo
   - Basic initialization with keyword parsing
 - **Created KTL.css** with utility classes, popup styles, dark theme variables

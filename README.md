@@ -7,7 +7,6 @@ A JavaScript library that extends Knack's Next-Gen (React-based) platform with p
 KTLNG is the Next-Gen version of [KTL (Knack Toolkit Library)](https://github.com/cortexrd/Knack-Toolkit-Library), adapted for Knack's new React-based platform. It provides:
 
 - **Keyword System**: Configure views and fields using keywords in the Builder (no code changes needed)
-- **Event Abstraction**: Use familiar Classic Knack event names with automatic translation to Next-Gen
 - **CSS-First Approach**: Visual modifications that work with React's virtual DOM
 - **Developer Tools**: Debug window, logging, version management
 
@@ -93,37 +92,12 @@ Keywords are added to view titles or field descriptions in the Knack Builder:
 
 Example view title: `Active Orders _ar=30 _hc=field_45`
 
-## Event System
-
-Use Classic-style events - they're automatically translated:
-
-```javascript
-// These work in KTLNG
-ktl.events.on('knack-scene-render.any', (event, data) => {
-    console.log('Page rendered:', data.pageKey);
-});
-
-ktl.events.on('knack-view-render.view_123', (event, data) => {
-    console.log('View rendered:', data.viewKey);
-});
-```
-
-### Event Mapping
-
-| Classic Event | Next-Gen Event |
-|---------------|----------------|
-| `knack-scene-render.scene_X` | `page:render:scene_X` |
-| `knack-view-render.view_X` | `view:render:view_X` |
-| `knack-form-submit.view_X` | `form:submit:view_X` |
-| `knack-record-create.view_X` | `record:create` |
-
 ## Modules
 
 | Module | Description |
 |--------|-------------|
 | `ktl.core` | Configuration, utilities, popups |
 | `ktl.storage` | localStorage/sessionStorage with app prefix |
-| `ktl.events` | Event abstraction layer |
 | `ktl.views` | View manipulation, auto-refresh |
 | `ktl.log` | Console and persistent logging |
 

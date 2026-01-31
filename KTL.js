@@ -295,82 +295,16 @@ function Ktl(appInfo) {
     };
 
     //========================================
-    // EVENT ABSTRACTION LAYER
+    // KTL INTERNAL EVENTS
     //========================================
 
     this.events = (function () {
-        const eventMap = {
-            'knack-scene-render': 'page:render',
-            'knack-view-render': 'view:render',
-            'knack-form-submit': 'form:submit',
-            'knack-record-create': 'record:create',
-            'knack-record-update': 'record:update',
-            'knack-record-delete': 'record:delete',
-            'knack-records-render': 'records:render'
-        };
-
-        const registeredHandlers = new Map();
-
-        function mapEventName(classicEvent) {
-            //Parse classic event format: 'knack-scene-render.scene_123' or 'knack-view-render.any'
-            const parts = classicEvent.split('.');
-            const baseEvent = parts[0];
-            const target = parts[1];
-
-            const ngBase = eventMap[baseEvent] || baseEvent;
-
-            if (!target || target === 'any') {
-                return ngBase;
-            }
-
-            return `${ngBase}:${target}`;
-        }
-
         return {
-            on: function (eventName, callback, options = {}) {
-                const ngEvent = mapEventName(eventName);
-                const handler = (data) => {
-                    //Adapt callback parameters for compatibility
-                    const event = { type: eventName };
-                    callback(event, data);
-                };
-
-                Knack.on(ngEvent, handler);
-                registeredHandlers.set(eventName + '_' + callback.toString().substring(0, 50), { ngEvent, handler });
-
-                return this;
-            },
-
-            off: function (eventName, callback) {
-                const key = eventName + '_' + (callback ? callback.toString().substring(0, 50) : '');
-                const entry = registeredHandlers.get(key);
-                if (entry) {
-                    Knack.off(entry.ngEvent, entry.handler);
-                    registeredHandlers.delete(key);
-                }
-                return this;
-            },
-
-            one: function (eventName, callback) {
-                const ngEvent = mapEventName(eventName);
-                const handler = (data) => {
-                    const event = { type: eventName };
-                    callback(event, data);
-                    Knack.off(ngEvent, handler);
-                };
-                Knack.on(ngEvent, handler);
-                return this;
-            },
-
             trigger: function (eventName, data) {
-                //Custom event dispatch for KTL internal events
+                //Custom event dispatch for KTL internal events (e.g., ktl:ready, ktl:scene-change)
                 const event = new CustomEvent('ktl:' + eventName, { detail: data });
                 document.dispatchEvent(event);
                 return this;
-            },
-
-            getEventMap: function () {
-                return { ...eventMap };
             }
         };
     })();
@@ -1039,31 +973,49 @@ function Ktl(appInfo) {
     // INITIALIZATION
     //========================================
 
+    let keywordsReady = false;
+    const pendingViews = []; //Views that rendered before keywords were parsed
+
+    function processViewKeywords(viewKey) {
+        const viewKeywords = ktlKeywords[viewKey];
+        if (viewKeywords) {
+            if (viewKeywords._ar) {
+                const interval = parseInt(viewKeywords._ar[0]?.params?.[0]?.[0] || 0);
+                if (interval >= 5) { //TODO: Put back to 60
+                    ktl.views.autoRefresh(viewKey, interval);
+                    ktl.log.clog(`Auto-refresh enabled for ${viewKey}: ${interval}s`, 'purple');
+                }
+            }
+        }
+    }
+
     async function init() {
         console.log('KTL initializing v' + KTL_VERSION);
 
-        //Parse keywords from schema
-        await initKeywordParser();
-
-        //Set up event listeners for page/view rendering
+        //Register event listeners FIRST to avoid missing early events
         Knack.on('page:render', (data) => {
             ktl.log.clog(`Page rendered: ${data.pageKey}`, 'blue');
         });
 
         Knack.on('view:render', (data) => {
-            //Process keywords for this view
-            const viewKeywords = ktlKeywords[data.viewKey];
-            if (viewKeywords) {
-                //TODO: Process view keywords (auto-refresh, hide columns, etc.)
-                if (viewKeywords._ar) {
-                    const interval = parseInt(viewKeywords._ar[0]?.params?.[0]?.[0] || 0);
-                    if (interval >= 5) { //TODO: Put back to 60
-                        ktl.views.autoRefresh(data.viewKey, interval);
-                        ktl.log.clog(`Auto-refresh enabled for ${data.viewKey}: ${interval}s`, 'purple');
-                    }
-                }
+            ktl.log.clog(`View rendered: ${data.viewKey}`, 'blue');
+            if (keywordsReady) {
+                processViewKeywords(data.viewKey);
+            } else {
+                pendingViews.push(data.viewKey);
             }
         });
+
+        //Parse keywords from schema
+        await initKeywordParser();
+        keywordsReady = true;
+
+        //Process any views that rendered before keywords were ready
+        if (pendingViews.length > 0) {
+            ktl.log.clog(`Processing ${pendingViews.length} pending view(s)`, 'gray');
+            pendingViews.forEach(viewKey => processViewKeywords(viewKey));
+            pendingViews.length = 0;
+        }
 
         //Dispatch ready event
         ktl.events.trigger('ready', { version: KTL_VERSION });
