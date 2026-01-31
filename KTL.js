@@ -1000,15 +1000,17 @@ function Ktl(appInfo) {
         Knack.on('view:render', (data) => {
             ktl.log.clog(`View rendered: ${data.viewKey}`, 'blue');
             if (keywordsReady) {
+                ktl.log.clog(`View keywords processing: ${data.viewKey}`, 'green');
                 processViewKeywords(data.viewKey);
             } else {
+                ktl.log.clog(`Pending View: ${data.viewKey}`, 'orange');
                 pendingViews.push(data.viewKey);
             }
         });
 
-        //Parse keywords from schema
-        await initKeywordParser();
-        keywordsReady = true;
+        // //Parse keywords from schema
+        // await initKeywordParser();
+        // keywordsReady = true;
 
         //Process any views that rendered before keywords were ready
         if (pendingViews.length > 0) {
