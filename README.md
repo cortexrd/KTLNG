@@ -46,6 +46,8 @@ KTL.setLocalMode()
 ```
 Then refresh the page.
 
+Or use URL parameter: `?ktl=local`
+
 ### 4. Create Your App File (Optional)
 
 ```javascript
