@@ -46,7 +46,7 @@ KTL.setLocalMode()
 ```
 Then refresh the page.
 
-### 2. Create Your App File (Optional)
+### 4. Create Your App File (Optional)
 
 ```javascript
 window.APP_VERSION = '1.0.0';
