@@ -253,7 +253,7 @@ Test app at `C:\code\KnackApps\KTL-NG Tutorials\` should include:
 
 ## Progress Log
 
-### 2025-01-31
+### 2026-01-31 (Initial)
 - Initial project setup
 - Created KTL Next-Gen folder structure
 - Basic KTL_Loader.js working (localhost mode only)
@@ -472,7 +472,7 @@ For Next-Gen compatibility, all visual modifications should use CSS injection ra
 The keyword syntax (`_keyword=params`) must remain identical so existing apps can migrate without changing their Builder configuration.
 
 ### Research Needed
-- How Next-Gen handles modals (for `_cfv` popup, etc.)
+- How Next-Gen handles modals
 - FullCalendar compatibility with React
 - Performance of CSS injection vs DOM manipulation for large tables
 
@@ -579,4 +579,13 @@ queryClient.invalidateQueries({ queryKey: ["view-data"] })
 
 The query client is internal (`mb`, `Kc`) and not exposed to custom code.
 
-**Feature request needed**: Ask Knack to expose `Knack.refreshView(viewKey)` or similar.
+### Feature Requests to Knack
+
+Are these available? If not, can you implement them?
+
+1. **onSceneChange** - Event when navigating away from current page
+2. **onDataReady** - Event when data is ready for custom code, but view not yet rendered
+3. **Deferred view rendering** - KTL receives view:render events before it can parse keywords. Need a way to tell Knack when to start rendering views
+4. **setViewFilters / setViewSearch** - Complement to existing `Knack.page.getViewFilters(viewKey)`
+5. **View pagination/sort control** - Ability to control records per page, sort column, and sort order
+6. **refreshView(viewKey)** - Programmatically refresh a view's data
