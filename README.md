@@ -14,18 +14,23 @@ KTLNG is the Next-Gen version of [KTL (Knack Toolkit Library)](https://github.co
 
 **Early Development** - Only local development mode works currently. CDN/production deployment not yet available.
 
+## Architecture
+
+KTL uses a two-phase loading pattern:
+1. **KTL_Start.js** - Entry point that handles version switching and event queuing
+2. **KTL.js** - Main library with all modules
+3. **KTL.css** - Styles for popups, utilities, and page hiding during init
+
+The page is hidden during initialization to prevent UI jitter while keywords are processed.
+
 ## Quick Start (Local Development)
 
 ### 1. Set Up Local Server
 
-Start a local HTTP server on port 3000 serving `C:\code`:
+Start the local file server on port 3000:
 
 ```bash
-# Using Python
-cd C:\code && python -m http.server 3000
-
-# Or using Node http-server
-npx http-server C:\code -p 3000 --cors
+node C:\code\Lib\KTLNG\NodeJS\NodeJS_FileServer.js
 ```
 
 ### 2. Add the Loader to Your App
@@ -34,19 +39,21 @@ In Knack Builder > Settings > API & Code > JavaScript:
 
 ```javascript
 Knack.ready().then(async () => {
-    await Knack.loadScript('http://localhost:3000/Lib/KTLNG/KTL_Loader.js');
+    await Knack.loadScript('http://localhost:3000/Lib/KTLNG/KTL_Start.js');
+    loadKtl(typeof KnackApp === 'function' ? KnackApp : null);
 });
 ```
 
 ### 3. Enable Local Mode
 
-In the browser console:
-```javascript
-KTL.setLocalMode()
-```
-Then refresh the page.
+Use URL parameter: `?ktl=local`
 
-Or use URL parameter: `?ktl=local`
+Or in browser console:
+```javascript
+localStorage.setItem('YourAp_XXXX_ktlCode', 'local');
+location.reload();
+```
+(Replace `YourAp_XXXX_` with your app's storage prefix)
 
 ### 4. Create Your App File (Optional)
 
@@ -70,16 +77,13 @@ window.KnackApp = function(params) {
 
 ## Development Mode
 
-Switch to local development from the browser console:
+Switch modes via URL parameter (easiest):
+- `?ktl=local` - Use localhost:3000
+- `?ktl=prod` - Use production CDN
+- `?ktl=dev` - Use dev version from CDN
+- `?ktl=beta` - Use beta version from CDN
 
-```javascript
-KTL.setLocalMode()   // Use localhost:3000
-KTL.setProdMode()    // Back to production
-KTL.setDevMode()     // Use dev version
-KTL.setBetaMode()    // Use beta version
-```
-
-Or via URL parameter: `?ktl=local` or `?ktl=dev`
+The mode is saved to localStorage and persists across sessions.
 
 ## Keywords
 
