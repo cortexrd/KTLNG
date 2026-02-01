@@ -132,6 +132,16 @@
 }
 
 /* ========================================
+   KTL INITIALIZATION (hide page until ready)
+   ======================================== */
+
+.ktlInitializing #knack-body,
+.ktlInitializing [data-testid="page-content"],
+.ktlInitializing main {
+    visibility: hidden !important;
+}
+
+/* ========================================
    LOADING STATES
    ======================================== */
 

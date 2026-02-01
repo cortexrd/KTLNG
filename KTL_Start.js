@@ -5,6 +5,26 @@
 async function loadKtl(KnackApp) {
     const KTL_VERSION = '0.1.0';
 
+    //Hide page immediately to prevent jitter during keyword processing
+    document.documentElement.classList.add('ktlInitializing');
+
+    //Queue events that fire before KTL.js loads
+    const queuedPages = [];
+    const queuedViews = [];
+    window._ktlListenersActive = false;
+    Knack.on('page:render', (data) => {
+        if (!window._ktlListenersActive) {
+            console.log('KTL_Start queued page:', data.pageKey);
+            queuedPages.push(data);
+        }
+    });
+    Knack.on('view:render', (data) => {
+        if (!window._ktlListenersActive) {
+            console.log('KTL_Start queued view:', data.viewKey);
+            queuedViews.push(data);
+        }
+    });
+
     const appDetails = await Knack.getApplicationDetails();
     const appName = appDetails.name || 'App';
     const appId = appDetails.id || '';
@@ -41,7 +61,7 @@ async function loadKtl(KnackApp) {
         await Knack.loadScript(baseUrl + 'KTL.js' + cacheBust);
 
         if (typeof Ktl === 'function') {
-            window.ktl = new Ktl({ lsShortName });
+            window.ktl = new Ktl({ lsShortName, queuedPages, queuedViews });
 
             //Load app-specific file in local mode
             if (isLocal) {

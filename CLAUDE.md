@@ -273,6 +273,123 @@ Test app at `C:\code\KnackApps\KTL-NG Tutorials\` should include:
 - **Git repos initialized**:
   - KTLNG: https://github.com/cortexrd/KTLNG
   - KTL-NG Tutorials: https://github.com/cortexrd/KTL-NG-Tutorials
+- **Solved event race condition** - see "Event Handling Architecture" section below
+- **Implemented page hiding during init** - prevents UI jitter from keyword processing
+
+---
+
+## Event Handling Architecture
+
+### The Problem: Race Condition
+
+Knack's `page:render` and `view:render` events can fire at any point during page load. KTL needs to:
+1. Capture ALL events (none can be missed)
+2. Process events only AFTER keywords are parsed from schema
+3. Hide page during processing to prevent UI jitter
+
+**Race condition timeline:**
+```
+Time →
+├── Knack.ready() fires
+├── KTL_Start.js begins loading
+├── page:render MAY fire here ← PROBLEM: no listener yet
+├── KTL.js begins loading
+├── page:render MAY fire here ← PROBLEM: Ktl() not called yet
+├── new Ktl() called
+├── Ktl constructor runs (module definitions)
+├── view:render MAY fire here ← PROBLEM: listeners not registered yet
+├── Event listeners registered
+├── Keywords parsing (~600-900ms)
+├── view:render MAY fire here ← Need to queue, keywords not ready
+├── Keywords ready
+├── Process queued events
+└── Future events handled normally
+```
+
+### The Solution: Two-Phase Event Capture
+
+**Phase 1: KTL_Start.js (before KTL.js loads)**
+```javascript
+const queuedPages = [];
+const queuedViews = [];
+window._ktlListenersActive = false;
+
+Knack.on('page:render', (data) => {
+    if (!window._ktlListenersActive) {
+        queuedPages.push(data);
+    }
+});
+Knack.on('view:render', (data) => {
+    if (!window._ktlListenersActive) {
+        queuedViews.push(data);
+    }
+});
+
+// Later: pass arrays to Ktl constructor
+window.ktl = new Ktl({ lsShortName, queuedPages, queuedViews });
+```
+
+**Phase 2: KTL.js (Ktl constructor)**
+```javascript
+function Ktl(appInfo) {
+    // Use queued events from KTL_Start.js
+    const pendingPages = appInfo.queuedPages || [];
+    const pendingViews = appInfo.queuedViews || [];
+
+    // Disable KTL_Start.js listeners, enable our own
+    window._ktlListenersActive = true;
+
+    Knack.on('page:render', (data) => {
+        if (keywordsReady) {
+            // Process immediately
+        } else {
+            pendingPages.push(data);  // Same array as KTL_Start.js used
+        }
+    });
+    // ... same for view:render
+}
+```
+
+**Why this works:**
+1. KTL_Start.js listeners capture events before KTL.js even loads
+2. Arrays are passed by reference to Ktl constructor
+3. Setting `_ktlListenersActive = true` disables KTL_Start.js listeners
+4. KTL.js listeners take over, using the same arrays
+5. No gap where events could be missed
+6. No duplicate entries (flag prevents both listeners from pushing)
+
+### Page Hiding During Init
+
+To prevent UI "jitter" (columns appearing then disappearing, rows without colors then with colors):
+
+**KTL_Start.js:**
+```javascript
+document.documentElement.classList.add('ktlInitializing');
+```
+
+**KTL.css:**
+```css
+.ktlInitializing #knack-body,
+.ktlInitializing [data-testid="page-content"],
+.ktlInitializing main {
+    visibility: hidden !important;
+}
+```
+
+**KTL.js (after processing):**
+```javascript
+function revealPage() {
+    document.documentElement.classList.remove('ktlInitializing');
+}
+
+function scheduleReveal() {
+    // Debounce: wait 200ms after last view:render
+    if (revealTimer) clearTimeout(revealTimer);
+    revealTimer = setTimeout(revealPage, 200);
+}
+```
+
+The debounce ensures we wait for all views to finish rendering before revealing.
 
 ---
 

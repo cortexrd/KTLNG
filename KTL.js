@@ -23,6 +23,35 @@ function Ktl(appInfo) {
     if (window.ktl)
         return window.ktl;
 
+    //Use queued events from KTL_Start.js (captured before KTL.js loaded)
+    let keywordsReady = false;
+    let pageRevealed = false;
+    let revealTimer = null;
+    const REVEAL_DEBOUNCE_MS = 200;
+    const pendingPages = appInfo.queuedPages || [];
+    const pendingViews = appInfo.queuedViews || [];
+
+    //Register listeners for events during/after init (disable KTL_Start.js listeners)
+    window._ktlListenersActive = true;
+
+    Knack.on('page:render', (data) => {
+        if (keywordsReady) {
+            ktl.log.clog(`Page rendered: ${data.pageKey}`, 'blue');
+        } else {
+            pendingPages.push(data);
+        }
+    });
+
+    Knack.on('view:render', (data) => {
+        if (keywordsReady) {
+            ktl.log.clog(`View rendered: ${data.viewKey}`, 'blue');
+            processViewKeywords(data.viewKey);
+            scheduleReveal();
+        } else {
+            pendingViews.push(data);
+        }
+    });
+
     const KTL_VERSION = '0.1.0';
     const APP_KTL_VERSIONS = (window.APP_VERSION || '0.0.0') + ' - ' + KTL_VERSION;
     window.APP_KTL_VERSIONS = APP_KTL_VERSIONS;
@@ -973,9 +1002,6 @@ function Ktl(appInfo) {
     // INITIALIZATION
     //========================================
 
-    let keywordsReady = false;
-    const pendingViews = []; //Views that rendered before keywords were parsed
-
     function processViewKeywords(viewKey) {
         const viewKeywords = ktlKeywords[viewKey];
         if (viewKeywords) {
@@ -989,35 +1015,46 @@ function Ktl(appInfo) {
         }
     }
 
+    function revealPage() {
+        if (pageRevealed) return;
+        pageRevealed = true;
+        document.documentElement.classList.remove('ktlInitializing');
+        ktl.log.clog('Page revealed', 'green');
+    }
+
+    function scheduleReveal() {
+        if (pageRevealed) return;
+        if (revealTimer) clearTimeout(revealTimer);
+        revealTimer = setTimeout(revealPage, REVEAL_DEBOUNCE_MS);
+    }
+
     async function init() {
         console.log('KTL initializing v' + KTL_VERSION);
 
-        //Register event listeners FIRST to avoid missing early events
-        Knack.on('page:render', (data) => {
-            ktl.log.clog(`Page rendered: ${data.pageKey}`, 'blue');
-        });
+        //Parse keywords from schema
+        await initKeywordParser();
+        keywordsReady = true;
 
-        Knack.on('view:render', (data) => {
-            ktl.log.clog(`View rendered: ${data.viewKey}`, 'blue');
-            if (keywordsReady) {
-                ktl.log.clog(`View keywords processing: ${data.viewKey}`, 'green');
-                processViewKeywords(data.viewKey);
-            } else {
-                ktl.log.clog(`Pending View: ${data.viewKey}`, 'orange');
-                pendingViews.push(data.viewKey);
-            }
-        });
+        //Process pages captured by early listeners
+        if (pendingPages.length > 0) {
+            pendingPages.forEach(data => {
+                ktl.log.clog(`Page rendered: ${data.pageKey}`, 'blue');
+            });
+            pendingPages.length = 0;
+        }
 
-        // //Parse keywords from schema
-        // await initKeywordParser();
-        // keywordsReady = true;
-
-        //Process any views that rendered before keywords were ready
+        //Process views captured by early listeners
         if (pendingViews.length > 0) {
             ktl.log.clog(`Processing ${pendingViews.length} pending view(s)`, 'gray');
-            pendingViews.forEach(viewKey => processViewKeywords(viewKey));
+            pendingViews.forEach(data => {
+                ktl.log.clog(`View rendered: ${data.viewKey}`, 'blue');
+                processViewKeywords(data.viewKey);
+            });
             pendingViews.length = 0;
         }
+
+        //Schedule reveal (will fire after views stop rendering)
+        scheduleReveal();
 
         //Dispatch ready event
         ktl.events.trigger('ready', { version: KTL_VERSION });
