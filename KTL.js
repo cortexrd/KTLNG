@@ -345,6 +345,104 @@ function Ktl(appInfo) {
     this.core = (function () {
         var cfg = {};
 
+        return {
+            setCfg: function (cfgObj = {}) {
+                Object.assign(cfg, cfgObj);
+                return cfg;
+            },
+
+            getCfg: function () {
+                return cfg;
+            },
+
+            getVersion: function () {
+                return KTL_VERSION;
+            },
+
+            //Utility: Wait for a selector to appear in the DOM
+            waitSelector: function (selector, timeout = 10000) {
+                return new Promise((resolve, reject) => {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        resolve(element);
+                        return;
+                    }
+
+                    const observer = new MutationObserver((mutations, obs) => {
+                        const el = document.querySelector(selector);
+                        if (el) {
+                            obs.disconnect();
+                            resolve(el);
+                        }
+                    });
+
+                    observer.observe(document.body, { childList: true, subtree: true });
+
+                    setTimeout(() => {
+                        observer.disconnect();
+                        reject(new Error(`Timeout waiting for selector: ${selector}`));
+                    }, timeout);
+                });
+            },
+
+            //Utility: Hide elements by selector
+            hideSelector: function (selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.style.display = 'none');
+                return elements.length;
+            },
+
+            //Utility: Show elements by selector
+            showSelector: function (selector) {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => el.style.display = '');
+                return elements.length;
+            },
+
+            //Utility: Timed popup notification
+            timedPopup: function (message, type = 'info', duration = 3000) {
+                const popup = document.createElement('div');
+                popup.className = `ktl-popup ktl-popup-${type}`;
+                popup.textContent = message;
+                popup.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 12px 20px;
+                    border-radius: 4px;
+                    background: ${type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'};
+                    color: white;
+                    z-index: 10000;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                `;
+                document.body.appendChild(popup);
+
+                setTimeout(() => {
+                    popup.remove();
+                }, duration);
+
+                return popup;
+            },
+
+            //Utility: Inject CSS dynamically
+            injectCSS: function (cssText, id) {
+                let style = id ? document.getElementById(id) : null;
+                if (!style) {
+                    style = document.createElement('style');
+                    if (id) style.id = id;
+                    document.head.appendChild(style);
+                }
+                style.textContent = cssText;
+                return style;
+            }
+        };
+    })();
+
+    //========================================
+    // MODULE: API
+    //========================================
+
+    this.api = (function () {
         /**
          * @typedef {Object} KtlKnackApiOptions
          * @property {boolean} [showSpinner=false] - Toggle Knack spinner during API calls.
@@ -356,9 +454,9 @@ function Ktl(appInfo) {
          * @property {number} [retryDelayBase=300] - Base delay for backoff in milliseconds.
          * @property {number} [retryDelayMax=20000] - Max delay for backoff in milliseconds.
          * @property {number[]} [retryOnStatus=[429,500,502,503,504]] - HTTP status codes to retry.
-         * @property {number} [writeConcurrency=4] - Max concurrent create/update requests.
+         * @property {number} [writeConcurrency=5] - Max concurrent create/update requests.
          * @property {number} [writeMinConcurrency=1] - Min concurrency after rate limiting.
-         * @property {number} [writeMaxConcurrency=4] - Upper bound for adaptive concurrency.
+         * @property {number} [writeMaxConcurrency=5] - Upper bound for adaptive concurrency.
          * @property {number} [writeRampDelayMs=2000] - Delay before ramping concurrency.
          */
 
@@ -1146,122 +1244,77 @@ function Ktl(appInfo) {
             }
         }
 
-        /**
-         * Create a scoped Knack API helper for KTL Next-Gen.
-         * @param {KtlKnackApiOptions} [options]
-         * @returns {KtlKnackApi}
-         */
-        function createKnackApi(options = {}) {
-            return new KtlKnackApi(options);
-        }
-
-        const defaultKnackApi = createKnackApi();
+        const apiInstance = new KtlKnackApi();
 
         return {
-            setCfg: function (cfgObj = {}) {
-                Object.assign(cfg, cfgObj);
-                return cfg;
-            },
-
-            getCfg: function () {
-                return cfg;
-            },
-
-            getVersion: function () {
-                return KTL_VERSION;
-            },
-
-            //Utility: Wait for a selector to appear in the DOM
-            waitSelector: function (selector, timeout = 10000) {
-                return new Promise((resolve, reject) => {
-                    const element = document.querySelector(selector);
-                    if (element) {
-                        resolve(element);
-                        return;
-                    }
-
-                    const observer = new MutationObserver((mutations, obs) => {
-                        const el = document.querySelector(selector);
-                        if (el) {
-                            obs.disconnect();
-                            resolve(el);
-                        }
-                    });
-
-                    observer.observe(document.body, { childList: true, subtree: true });
-
-                    setTimeout(() => {
-                        observer.disconnect();
-                        reject(new Error(`Timeout waiting for selector: ${selector}`));
-                    }, timeout);
-                });
-            },
-
-            //Utility: Hide elements by selector
-            hideSelector: function (selector) {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(el => el.style.display = 'none');
-                return elements.length;
-            },
-
-            //Utility: Show elements by selector
-            showSelector: function (selector) {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(el => el.style.display = '');
-                return elements.length;
-            },
-
-            //Utility: Timed popup notification
-            timedPopup: function (message, type = 'info', duration = 3000) {
-                const popup = document.createElement('div');
-                popup.className = `ktl-popup ktl-popup-${type}`;
-                popup.textContent = message;
-                popup.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    padding: 12px 20px;
-                    border-radius: 4px;
-                    background: ${type === 'error' ? '#f44336' : type === 'warning' ? '#ff9800' : '#2196f3'};
-                    color: white;
-                    z-index: 10000;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-                `;
-                document.body.appendChild(popup);
-
-                setTimeout(() => {
-                    popup.remove();
-                }, duration);
-
-                return popup;
-            },
-
-            //Utility: Inject CSS dynamically
-            injectCSS: function (cssText, id) {
-                let style = id ? document.getElementById(id) : null;
-                if (!style) {
-                    style = document.createElement('style');
-                    if (id) style.id = id;
-                    document.head.appendChild(style);
-                }
-                style.textContent = cssText;
-                return style;
-            },
-
             /**
-             * Create a Knack API helper instance.
+             * Create a new API instance with custom options.
              * @param {KtlKnackApiOptions} [options]
              * @returns {KtlKnackApi}
              */
-            createKnackApi: function (options = {}) {
-                return createKnackApi(options);
+            create: function (options = {}) {
+                return new KtlKnackApi(options);
             },
 
             /**
-             * Default Knack API helper instance (shared).
-             * @type {KtlKnackApi}
+             * Enable or disable debug logging on the shared instance.
+             * @param {boolean} enabled
              */
-            knackApi: defaultKnackApi
+            setDebug: function (enabled) {
+                apiInstance.setDebug(enabled);
+            },
+
+            /**
+             * Whether logs are permitted for the shared instance.
+             * @returns {boolean}
+             */
+            canLog: function () {
+                return apiInstance.canLog();
+            },
+
+            getRecords: function (...args) {
+                return apiInstance.getRecords(...args);
+            },
+
+            getAllRecords: function (...args) {
+                return apiInstance.getAllRecords(...args);
+            },
+
+            getRecord: function (...args) {
+                return apiInstance.getRecord(...args);
+            },
+
+            getRecordChildren: function (...args) {
+                return apiInstance.getRecordChildren(...args);
+            },
+
+            getAllRecordChildren: function (...args) {
+                return apiInstance.getAllRecordChildren(...args);
+            },
+
+            createRecord: function (...args) {
+                return apiInstance.createRecord(...args);
+            },
+
+            updateRecord: function (...args) {
+                return apiInstance.updateRecord(...args);
+            },
+
+            deleteRecord: function (...args) {
+                return apiInstance.deleteRecord(...args);
+            },
+
+            refreshView: function (...args) {
+                return apiInstance.refreshView(...args);
+            },
+
+            buildFilters: function (...args) {
+                return apiInstance.buildFilters(...args);
+            },
+
+            buildSorters: function (...args) {
+                return apiInstance.buildSorters(...args);
+            }
         };
     })();
 
