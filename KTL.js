@@ -1830,6 +1830,30 @@ function Ktl(appInfo) {
     //========================================
 
     function processViewKeywords(viewKey) {
+        //Clean up title (remove keywords from displayed text)
+        const viewEl = document.getElementById(viewKey);
+        if (viewEl) {
+            //Clean h2 title
+            const titleEl = viewEl.querySelector('.kn-view-header h2');
+            if (titleEl) {
+                const cleanedTitle = cleanUpKeywords(titleEl.textContent);
+                if (cleanedTitle !== titleEl.textContent) {
+                    titleEl.textContent = cleanedTitle;
+                }
+            }
+
+            //Clean description (rich text below title)
+            const descEl = viewEl.querySelector('.kn-view-header .kn-rich-text-renderer.text-subtle')
+            if (descEl) {
+                const cleanedDesc = cleanUpKeywords(descEl.textContent);
+                if (cleanedDesc.trim() === '') {
+                    descEl.style.display = 'none';
+                } else if (cleanedDesc !== descEl.textContent) {
+                    descEl.textContent = cleanedDesc;
+                }
+            }
+        }
+
         const viewKeywords = ktlKeywords[viewKey];
         if (viewKeywords) {
             if (viewKeywords._ar) {
